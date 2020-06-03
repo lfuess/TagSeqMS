@@ -16,14 +16,14 @@ p1 = ggplot(scat, aes(y=Fibrosis, x=Infection, color=Color)) +
 
 ##we can also make unique plots for each fibrosis and infection##
 
-infect = read.csv("Infect_unique_reg_bar.csv")
+infect = read.csv("Infect_reg_bar.csv")
 p2 = ggplot(infect, aes(y=z.score, x=reorder(Regulator, z.score))) + 
   geom_bar(position="dodge", stat="identity", fill = "#cc3d24") + coord_flip()+
   theme_classic() + geom_abline(slope=0, intercept=0,  col = "black")+
   xlab("Regulator") + ylab("z-score")
 
 
-fibrosis = read.csv("Fib_unique_reg_bar.csv")
+fibrosis = read.csv("Fib_reg_bar.csv")
 p3 = ggplot(fibrosis, aes(y=z.score, x=reorder(Regulator, z.score))) + 
   geom_bar(position="dodge", stat="identity", fill = "#004f7a" ) + coord_flip()+
   theme_classic() + geom_abline(slope=0, intercept=0,  col = "black")+
