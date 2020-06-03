@@ -10,7 +10,7 @@ names(initialdata);
 
 ##Now to select the data we want##
 
-data = as.data.frame(initialdata[c(2,4,25:28,30:31,34,54)]);
+data = as.data.frame(initialdata[c(2,4,27:28,30:31,34,54)]);
 names(data)
 
 dim(data)
@@ -30,9 +30,9 @@ merged=merge(samples, data, by.x = "Sample", by.y = "sample_ID")
 dim(merged) ##should have 408 lines remaining##
 
 ##Select everything but F1s
-GBC=merged[merged[,5] == "GBC",]
-RBC=merged[merged[,5] == "RBC",]
-F2=merged[merged[,5] == "F2",]
+GBC=merged[merged[,3] == "GBC",]
+RBC=merged[merged[,3] == "RBC",]
+F2=merged[merged[,3] == "F2",]
 
 final=rbind(GBC,RBC,F2)
 
