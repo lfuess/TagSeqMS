@@ -1,12 +1,13 @@
-##this script will take our processed read count file and run differential expression analysis
+##this script will take our processed read count file and run differential expression analysis using DESeq2##
+##the results from these analyses can be input into IPA or analyzed on their own##
 
 #BiocManager::install("DESeq2")
 library("DESeq2")
 
 ##input our data##
 
-countData <- read.csv("allcounts_noF1noNA.csv", row.names="Gene", check.names= FALSE)
-colData <- read.csv("ExpDesign_NoNA.csv") ##note I set all NAs here for Sex to U for unknown (in Excel.. need to add that to code)##
+countData <- read.csv("allcounts_final.csv", row.names="", check.names= FALSE)
+colData <- read.csv("ExpDesign.csv")
 
 ##read normalization- if needed for other applications (WGCNA, heatmaps)##
 
@@ -35,6 +36,7 @@ all.zero
 idx <- which(all.zero)
 dds <- dds[,-idx]
 unname(dds)
+lapply(colData, class)
 
 ##now model it, following suggestions for large models with rows which do not converge in beta##
 object = DESeqDataSetFromMatrix(countData = countData, colData = colData, design = ~ library_name + WormSource + CrossDir + worm_present + Fused.Organs + BG_Gadj_MFI + Sex + CrossDir*worm_present + CrossDir*Fused.Organs, ignoreRank = TRUE)
@@ -45,11 +47,11 @@ object = DESeqDataSetFromMatrix(countData = countData, colData = colData, design
 
 ##actually run the analysis; do it in two steps to increase power and get more rows to converge##
 object <- estimateDispersions(object, modelMatrix = dds)
-#save(colData, countData, dds, object, file = "Stickeblack-Frozed.RData")
+ #save(colData, countData, dds, object, file = "Stickeblack-Frozed.RData")
 #load("Stickeblack-Frozed.RData")
 dds1 <- nbinomWaldTest(object, maxit=500, modelMatrix = dds)
 
-#save(colData, countData, dds, dds1, object, file = "Stickeblack-DEseq-Full-StringParam.RData")
+#save(colData, countData, dds, dds1, object,file = "Stickeblack-DEseq-Full-StringParam.RData")
 #load("Stickeblack-DEseq-Full-StringParam_nosexworm.RData")
 
 ##converte the results and remove any rows which still didn't converge##
@@ -59,69 +61,69 @@ res = res[mcols(dds1)$fullBetaConv,]
 ##Look at Infection##
 resinfect <- results(dds1,contrast=list(c("worm_presentTRUE")))
 resorderd <-resinfect[order(resinfect$padj),] 
-head(resorderd, 310)
-write.csv(resorderd, file = "DESeq_Infection_Full_StringParam_noNAs.csv") ##71 affected
+head(resorderd, 2370)
+write.csv(resorderd, file = "DESeq_Infection_Full_StringParam_new.csv") ##2369 affected
 
 ##Next GBC v F2##
 resGvF2 <- results(dds1,contrast=list(c("CrossDirGBC")))
 resorderd <-resGvF2[order(resGvF2$padj),] 
-head(resorderd,6000)
-write.csv(resorderd, file = "DESeq_GBCvF2_Full_StringParam_noNAs.csv") ##4132 affected
+head(resorderd,7747)
+write.csv(resorderd, file = "DESeq_GBCvF2_Full_StringParam_new.csv") ##7745 affected
 
 ##Next RBC v F2##
 resRvF2 <- results(dds1,contrast=list(c("CrossDirRBC")))
 resorderd <-resRvF2[order(resRvF2$padj),] 
-head(resorderd, 8975) #8974 affected##
-write.csv(resorderd, file = "DESeq_RBCvF2_Full_StringParam_noNAs.csv") ## write CSV ##
+head(resorderd, 10605) #10601 affected##
+write.csv(resorderd, file = "DESeq_F2vsRBC_Full_StringParam_new.csv") ## write CSV ##
 
 ##Next GBC v RBC##
 resGvR <- results(dds1,contrast=list(c("CrossDirGBC"),  c("CrossDirRBC")))
 resorderd <-resGvR[order(resGvR$padj),] 
-head(resorderd, 846) #845 affected##
-write.csv(resorderd, file = "DESeq_RBCvGBC_Full_StringParam_noNAs.csv") ## write CSV ##
+head(resorderd, 1205) #1201 affected##
+write.csv(resorderd, file = "DESeq_RBCvGBC_Full_StringParam_new.csv") ## write CSV ##
 
 ##Next Fibrosis##
 resFib <- results(dds1,contrast=list(c("Fused.OrgansTRUE")))
 resorderd <-resFib[order(resFib$padj),] 
-head(resorderd, 10) #0 affected##
-write.csv(resorderd, file = "DESeq_Fibrosis_Full_StringParam_noNAs.csv") ## write CSV ##
+head(resorderd, 5830) #5826 affected##
+write.csv(resorderd, file = "DESeq_Fibrosis_Full_StringParam_new.csv") ## write CSV ##
 
 ##ROS##
 resROS <- results(dds1,contrast=list(c("BG_Gadj_MFI")))
 resorderd <-resROS[order(resROS$padj),] 
 head(resorderd, 10) #0 affected##
-write.csv(resorderd, file = "DESeq_ROS_Full_StringParam_noNAs.csv")
+write.csv(resorderd, file = "DESeq_ROS_Full_StringParam_new.csv")
 
 ##Sex##
 resSex <- results(dds1,contrast=list(c("SexM")))
 resorderd <-resSex[order(resSex$padj),] 
-head(resorderd, 500) #498 affected##
-write.csv(resorderd, file = "DESeq_Sex_Full_StringParam_noNAs.csv")
+head(resorderd, 770) #769 affected##
+write.csv(resorderd, file = "DESeq_Sex_Full_StringParam_new.csv")
 
 ##Worm##
 resWorm <- results(dds1,contrast=list(c("WormSourceGos")))
 resorderd <-resWorm[order(resWorm$padj),] 
-head(resorderd, 9405) #9404 affected##
-write.csv(resorderd, file = "DESeq_Worm_Full_StringParam_noNAs.csv")
+head(resorderd, 10080) #10079 affected##
+write.csv(resorderd, file = "DESeq_Worm_Full_StringParam_new.csv")
 
 ##Moving on to Interactive Effects, starting with Cross by Infection##
 resCrossInfect <- results(dds1,contrast=list(c("CrossDirGBC.worm_presentTRUE")))
 resorderd <-resCrossInfect[order(resCrossInfect$padj),] 
-head(resorderd, 10) #0 affected##
-write.csv(resorderd, file = "DESeq_FvGbyInfect_Full_StringParam_noNAs.csv")
+head(resorderd, 560) #567 affected##
+write.csv(resorderd, file = "DESeq_FvGbyInfect_Full_StringParam_new.csv")
 
 resCrossInfect1 <- results(dds1,contrast=list(c("CrossDirRBC.worm_presentTRUE")))
 resorderd <-resCrossInfect1[order(resCrossInfect1$padj),] 
-head(resorderd, 105) #2 affected##
-write.csv(resorderd, file = "DESeq_FvRbyInfect_Full_StringParam_noNAs.csv")## write CSV ##
+head(resorderd, 15) #12 affected##
+write.csv(resorderd, file = "DESeq_FvRbyInfect_Full_StringParam_new.csv")## write CSV ##
 
-resROSCross3 <- results(dds1,contrast=list(c("CrossDirGBC.worm_presentTRUE"),  c("CrossDirRBC.worm_presentTRUE")))
-resorderd <-resROSCross3[order(resROSCross3$padj),] 
-head(resorderd, 10) #2 affected##
-write.csv(resorderd, file = "DESeq_GvRbyInfect_Full_StringParam_noNAs.csv")
+resCross2 <- results(dds1,contrast=list(c("CrossDirGBC.worm_presentTRUE"),  c("CrossDirRBC.worm_presentTRUE")))
+resorderd <-resCross2[order(resCross2$padj),] 
+head(resorderd, 10) #4 affected##
+write.csv(resorderd, file = "DESeq_GvRbyInfect_Full_StringParam_new.csv")
 
 ##Cross by Fibrosis##
 resCrossFibrosis <- results(dds1,contrast=list(c("CrossDirRBC.Fused.OrgansTRUE")))
 resorderd <-resCrossFibrosis[order(resCrossFibrosis$padj),] 
-head(resorderd, 10) #0 affected##
-write.csv(resorderd, file = "DESeq_CrossbyFibrosis_Full_StringParam_noNAs.csv")
+head(resorderd, 85) #84 affected##
+write.csv(resorderd, file = "DESeq_CrossbyFibrosis_Full_StringParam_new.csv")
